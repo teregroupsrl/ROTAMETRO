@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f0f4f8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Rotametro">
+  <title>Rotametro LZM-15T</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --accent: #0ea5e9;
+      --accent-dark: #0284c7;
+      --accent-light: #e0f2fe;
+      --warn: #f59e0b;
+      --warn-light: #fef3c7;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --ok: #10b981;
+      --ok-light: #d1fae5;
+      --muted: #64748b;
+      --muted-light: #94a3b8;
+      --text: #0f172a;
+      --text2: #334155;
+      --border: #e2e8f0;
+      --border2: #cbd5e1;
+      --mono: 'JetBrains Mono', 'Courier New', monospace;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--sans); min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center;
+      overflow-x: hidden;
+    }
+    .hint { font-size: 11px; color: var(--muted-light); margin-top: 5px; }
+
+    .wrap {
+      width: 100%; max-width: 440px;
+      padding: 28px 16px max(40px, env(safe-area-inset-bottom, 40px));
+    }
+
+    /* HEADER */
+    .header { text-align: center; margin-bottom: 24px; animation: fadeDown 0.4s ease both; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      letter-spacing: 1px; color: var(--accent-dark);
+      border: 1.5px solid var(--accent); background: var(--accent-light);
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;
+    }
+    .chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    h1 { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: var(--text); margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: var(--muted); font-weight: 400; }
+
+    /* CARD */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 22px 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+      animation: fadeUp 0.4s 0.05s ease both;
+    }
+
+    /* FORMULA BADGE */
+    .formula-badge {
+      background: var(--accent-light); border: 1px solid #bae6fd;
+      border-radius: 10px; padding: 10px 14px; margin-bottom: 20px;
+      font-family: var(--mono); font-size: 11.5px; color: var(--accent-dark);
+      line-height: 1.9; text-align: center;
+    }
+    .formula-badge .label {
+      font-family: var(--sans); font-size: 10px; letter-spacing: 0.8px;
+      color: var(--muted); display: block; margin-bottom: 4px;
+      text-transform: uppercase; font-weight: 600;
+    }
+
+    /* FIELDS */
+    .fields { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+    .field-label {
+      font-size: 12px; font-weight: 600; color: var(--text2);
+      letter-spacing: 0.2px; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .input-wrap { position: relative; }
+    input[type=number] {
+      width: 100%; background: var(--bg); border: 1.5px solid var(--border2);
+      border-radius: 12px; padding: 13px 60px 13px 14px;
+      font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--text);
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+      -moz-appearance: textfield; appearance: textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+      background: #fff;
+    }
+    .unit {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      font-family: var(--sans); font-size: 11px; font-weight: 600;
+      color: var(--muted-light); letter-spacing: 0.5px; pointer-events: none;
+    }
+    select {
+      width: 100%; background: var(--bg); border: 1.5px solid var(--border2);
+      border-radius: 12px; padding: 13px 40px 13px 14px;
+      font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--text);
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none; -webkit-appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); background-color: #fff; }
+
+    /* SEZIONE PERDITE */
+    .section-title {
+      font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+      color: var(--muted); font-weight: 700; margin: 18px 0 12px;
+      border-top: 1px solid var(--border); padding-top: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .losses-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+    .loss-item .input-wrap input { font-size: 15px; padding: 10px 46px 10px 12px; }
+    .loss-item .unit { font-size: 10px; }
+    .loss-item .field-label { font-size: 11px; }
+
+    /* RISULTATO */
+    .result-box {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1.5px solid #bae6fd;
+      border-radius: 16px; padding: 22px 18px 18px; text-align: center;
+      margin: 20px 0 14px; position: relative; overflow: hidden;
+      transition: opacity 0.3s;
+    }
+    .result-box.empty { opacity: 0.4; }
+    .result-label {
+      font-family: var(--sans); font-size: 11px; font-weight: 700;
+      letter-spacing: 1px; color: var(--accent-dark);
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .result-value {
+      font-family: var(--mono); font-size: 60px; font-weight: 600;
+      color: var(--accent-dark); line-height: 1; letter-spacing: -2px;
+    }
+    .result-unit { font-size: 20px; color: var(--accent); font-weight: 400; }
+    .result-sub { margin-top: 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* DETTAGLI */
+    .details {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px; margin-bottom: 14px;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity 0.35s 0.1s, transform 0.35s 0.1s;
+    }
+    .details.visible { opacity: 1; transform: translateY(0); }
+    .details-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 10px;
+    }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+    .detail-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px 10px;
+    }
+    .di-label { font-size: 10px; color: var(--muted-light); margin-bottom: 3px; line-height: 1.3; font-weight: 500; }
+    .di-value { font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 600; }
+    .di-value.accent { color: var(--ok); }
+    .di-value.warn { color: var(--warn); }
+
+    .formula-box {
+      font-family: var(--mono); font-size: 11px; color: var(--muted-light);
+      text-align: center; border-top: 1px solid var(--border);
+      padding-top: 10px; line-height: 2;
+    }
+
+    /* ALERT */
+    .alert {
+      border-radius: 10px; padding: 10px 13px; margin-bottom: 12px;
+      font-size: 12px; line-height: 1.6; font-weight: 500;
+      opacity: 0; transition: opacity 0.35s 0.15s;
+    }
+    .alert.visible { opacity: 1; }
+    .alert.info {
+      background: var(--ok-light); border: 1px solid #6ee7b7; color: #065f46;
+    }
+    .alert.warn {
+      background: var(--warn-light); border: 1px solid #fcd34d; color: #92400e;
+    }
+    .alert strong { font-weight: 700; }
+
+    /* FOOTER */
+    .footer {
+      text-align: center; font-size: 11px; color: var(--muted-light);
+      border-top: 1px solid var(--border); padding-top: 14px; margin-top: 2px;
+    }
+
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-10px);} to { opacity:1; transform:translateY(0);} }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0);} }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="chip">LZM-15T</div>
+    <h1>Rotametro</h1>
+    <p class="subtitle">Calcolatore lettura operativa · Aria in PBR</p>
+  </div>
+
+  <div class="card">
+
+    <div class="formula-badge">
+      <span class="label">Formula ufficiale datasheet</span>
+      f = √( P<sub>tubo,abs</sub> / 1.013 ) &nbsp;·&nbsp; Q<sub>lettura</sub> = Q<sub>reale</sub> / f
+    </div>
+
+    <div class="fields">
+
+      <div class="field">
+        <div class="field-label"><span>📊</span> Scala rotametro</div>
+        <select id="scala">
+          <option value="12-120">12 – 120 LPM</option>
+          <option value="24-240">24 – 240 LPM</option>
+          <option value="48-480" selected>48 – 480 LPM</option>
+        </select>
+        <div class="hint">Range del rotametro LZM-15 installato</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>👁️</span> Errore parallasse</div>
+        <select id="parallasse">
+          <option value="5">Lettura attenta – occhio a livello del galleggiante (± 5 LPM, ~1% f.s.)</option>
+          <option value="13.5">Lettura rapida – angolo 10–15° (± 12–15 LPM, ~3% f.s.)</option>
+          <option value="27.5">Lettura errata – angolo &gt;30° o tubo sporco (± 25–30 LPM, ~6% f.s.)</option>
+        </select>
+        <div class="hint">Scegli errore di misura</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>📏</span> Altezza colonna PBR</div>
+        <div class="input-wrap">
+          <input type="number" id="altezza" inputmode="decimal" placeholder="es. 4.0" step="0.5" min="0">
+          <span class="unit">m</span>
+        </div>
+        <div class="hint">Profondità acqua nel reattore (es. 4 m o 2 m)</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>💨</span> Portata aria desiderata</div>
+        <div class="input-wrap">
+          <input type="number" id="portata" inputmode="decimal" placeholder="es. 200" step="5" min="0">
+          <span class="unit">L/min</span>
+        </div>
+        <div class="hint">Flusso d'aria effettivo che vuoi nel PBR</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span>🔧</span> Pressione di rete (ingresso)</div>
+        <div class="input-wrap">
+          <input type="number" id="p_rete" inputmode="decimal" placeholder="es. 0.8" step="0.05" min="0" value="0.8">
+          <span class="unit">barg</span>
+        </div>
+        <div class="hint">Pressione della dorsale di alimentazione aria</div>
+      </div>
+
+    </div>
+
+    <!-- Perdite aggiuntive -->
+    <div class="section-title">Contropressione aggiuntiva a valle</div>
+    <div class="losses-grid">
+      <div class="loss-item field">
+        <div class="field-label" style="font-size:10px;">N° fori Ø6mm</div>
+        <div class="input-wrap">
+          <input type="number" id="n_fori" inputmode="numeric" value="2" step="1" min="1" max="20">
+          <span class="unit">n.</span>
+        </div>
+        <div class="hint">Fori di ingresso nel PBR (Cd=0.61)</div>
+      </div>
+      <div class="loss-item field">
+        <div class="field-label" style="font-size:10px;">Check valve</div>
+        <div class="input-wrap">
+          <input type="number" id="dp_check" inputmode="decimal" value="10" step="1" min="0">
+          <span class="unit">mbar</span>
+        </div>
+        <div class="hint">VRUFV012E ≈ 10 mbar</div>
+      </div>
+      <div class="loss-item field">
+        <div class="field-label" style="font-size:10px;">Perdite tubo PE</div>
+        <div class="input-wrap">
+          <input type="number" id="dp_tubo" inputmode="decimal" value="1" step="0.5" min="0">
+          <span class="unit">mbar</span>
+        </div>
+        <div class="hint">≈ 1 mbar (≤50 cm)</div>
+      </div>
+      <div class="loss-item field">
+        <div class="field-label" style="font-size:10px;">Altre perdite</div>
+        <div class="input-wrap">
+          <input type="number" id="dp_altro" inputmode="decimal" value="0" step="1" min="0">
+          <span class="unit">mbar</span>
+        </div>
+        <div class="hint">Perdite circuito aggiuntive</div>
+      </div>
+    </div>
+
+    <!-- Risultato -->
+    <div class="result-box empty" id="resultBox">
+      <div class="result-label">Leggere sul rotametro</div>
+      <div class="result-value" id="resultVal">–</div>
+      <span class="result-unit" id="resultUnit"></span>
+      <div class="result-sub" id="resultSub">Inserisci i valori sopra</div>
+      <div id="resultFs" style="margin-top:8px; font-size:11px; color:var(--accent-dark); font-family:var(--mono); font-weight:600; opacity:0.75;">± 4% f.s.</div>
+      <div id="resultParallasse" style="margin-top:4px; font-size:11px; color:var(--accent-dark); font-family:var(--mono); font-weight:600; opacity:0.75;"></div>
+      <div style="margin-top:10px; border-top:1px solid #bae6fd; padding-top:8px;">
+        <div id="resultErrTot" style="font-size:12px; color:var(--accent-dark); font-family:var(--mono); font-weight:700;"></div>
+      </div>
+    </div>
+
+    <!-- Alert fuori scala -->
+    <div class="alert warn" id="alertWarn"></div>
+
+    <!-- Alert info -->
+    <div class="alert info" id="alertInfo"></div>
+
+    <!-- Dettagli -->
+    <div class="details" id="details">
+      <div class="details-title">Dettagli calcolo</div>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="di-label">P colonna acqua</div>
+          <div class="di-value" id="dPacqua">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">ΔP fori Ø6mm (calc.)</div>
+          <div class="di-value" id="dDpFori">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">Contropressione totale</div>
+          <div class="di-value" id="dCtotale">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">P tubo misura (abs)</div>
+          <div class="di-value" id="dPtubo">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">Fattore f</div>
+          <div class="di-value accent" id="dF">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">Margine valvola</div>
+          <div class="di-value" id="dMargine">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">Q reale target</div>
+          <div class="di-value" id="dQreale">–</div>
+        </div>
+        <div class="detail-item">
+          <div class="di-label">Posizione % f.s.</div>
+          <div class="di-value" id="dFs">–</div>
+        </div>
+      </div>
+      <div class="formula-box">
+        f = √( P<sub>tubo</sub> / 1.013 ) &nbsp;·&nbsp; Q<sub>lettura</sub> = Q<sub>reale</sub> / f
+      </div>
+    </div>
+
+    <div class="footer">
+      Formula validata da test fisico · ±4% f.s. · Teregroup Srl
+    </div>
+  </div>
+</div>
+
+<script>
+  const P_ATM_BAR = 1.013; // bara — condizioni di taratura rotametro
+
+  function calcola() {
+    const scala_val = document.getElementById('scala').value;
+    const [sMin, sMax] = scala_val.split('-').map(Number);
+    const SCALA_MIN = sMin;
+    const SCALA_MAX = sMax;
+    const h        = parseFloat(document.getElementById('altezza').value);
+    const q_reale  = parseFloat(document.getElementById('portata').value);
+    const p_rete   = parseFloat(document.getElementById('p_rete').value);   // barg
+    const n_fori   = parseFloat(document.getElementById('n_fori').value) || 2;
+    const dp_check = parseFloat(document.getElementById('dp_check').value) || 0;
+    const dp_tubo  = parseFloat(document.getElementById('dp_tubo').value)  || 0;
+    const dp_altro = parseFloat(document.getElementById('dp_altro').value)  || 0;
+
+    const box     = document.getElementById('resultBox');
+    const details = document.getElementById('details');
+    const alertW  = document.getElementById('alertWarn');
+    const alertI  = document.getElementById('alertInfo');
+
+    if (isNaN(h) || isNaN(q_reale) || isNaN(p_rete) || h <= 0 || q_reale <= 0 || p_rete < 0) {
+      box.classList.add('empty');
+      details.classList.remove('visible');
+      alertW.classList.remove('visible');
+      alertI.classList.remove('visible');
+      document.getElementById('resultVal').textContent = '–';
+      document.getElementById('resultUnit').textContent = '';
+      document.getElementById('resultSub').textContent = 'Inserisci i valori sopra';
+      return;
+    }
+
+    // ΔP fori Ø6mm — formula orifizio: ΔP = ½·ρ·v² con v = Q_foro/(Cd·A_foro)
+    const Cd    = 0.61;
+    const D_m   = 0.006;                           // 6 mm in metri
+    const A_m2  = Math.PI / 4 * D_m * D_m;        // area singolo foro [m²]
+    const rho   = 1.2;                             // kg/m³ aria
+    const Q_tot_m3s = q_reale / 1000 / 60;        // L/min → m³/s
+    const Q_foro_m3s = Q_tot_m3s / n_fori;        // portata per foro
+    const v_foro = Q_foro_m3s / (Cd * A_m2);      // velocità effettiva [m/s]
+    const dp_fori_pa = 0.5 * rho * v_foro * v_foro; // Pa
+    const dp_fori_mbar = dp_fori_pa / 100;         // mbar
+
+    // Calcolo contropressione totale
+    const p_acqua_mbar   = 1000 * 9.81 * h / 100; // mbar
+    const cp_totale_mbar = p_acqua_mbar + dp_fori_mbar + dp_check + dp_tubo + dp_altro;
+    const cp_totale_bar  = cp_totale_mbar / 1000;
+
+    // Pressione assoluta nel tubo di misura
+    const p_tubo_abs_bar = P_ATM_BAR + cp_totale_bar;
+
+    // Fattore di correzione
+    const f = Math.sqrt(p_tubo_abs_bar / P_ATM_BAR);
+
+    // Lettura da impostare sul rotametro
+    const q_lettura = q_reale / f;
+
+    // Margine valvola = P_rete_abs - P_tubo_abs
+    const p_rete_abs_bar = P_ATM_BAR + p_rete;
+    const margine_bar    = p_rete_abs_bar - p_tubo_abs_bar;
+
+    // Percentuale fondo scala
+    const pct_fs = ((q_lettura - SCALA_MIN) / (SCALA_MAX - SCALA_MIN) * 100);
+
+    // UI — risultato principale
+    box.classList.remove('empty');
+    details.classList.add('visible');
+
+    document.getElementById('resultVal').textContent  = q_lettura.toFixed(1);
+    document.getElementById('resultUnit').textContent = ' LPM';
+    document.getElementById('resultSub').textContent  =
+      `Imposta il galleggiante su ${q_lettura.toFixed(1)} LPM sulla scala aria`;
+
+    // ±4% fondo scala calcolato sulla scala selezionata
+    const fs_range = SCALA_MAX - SCALA_MIN;
+    const err_lpm  = fs_range * 0.04;
+    document.getElementById('resultFs').textContent =
+      `± 4% f.s. = ± ${err_lpm.toFixed(1)} LPM  (f.s. ${SCALA_MIN}–${SCALA_MAX} LPM)`;
+
+    // Errore parallasse — calcolo sul fondo scala del range scelto
+    const par_pct = parseFloat(document.getElementById('parallasse').value); // % f.s. come valore LPM fisso
+    const parEl   = document.getElementById('resultParallasse');
+    // par_val è già in LPM (valore medio della tabella), lo mostriamo direttamente
+    // ma calcoliamo anche la % sul fondo scala effettivo
+    const par_pct_fs = (par_pct / fs_range * 100);
+    const parDescs = {
+      5:    'attenta (occhio al galleggiante)',
+      13.5: 'rapida (angolo 10–15°)',
+      27.5: 'errata (angolo >30° / tubo sporco)'
+    };
+    const parDesc = parDescs[par_pct] || '';
+    parEl.textContent = `Parallasse ${parDesc}: ± ${par_pct.toFixed(1)} LPM (~${par_pct_fs.toFixed(1)}% f.s.)`;
+
+    // Errore totale combinato: sqrt(err_fs² + err_par²)
+    const err_tot     = Math.sqrt(err_lpm * err_lpm + par_pct * par_pct);
+    const err_tot_pct = (err_tot / fs_range * 100);
+    const q_min       = (q_lettura - err_tot).toFixed(1);
+    const q_max       = (q_lettura + err_tot).toFixed(1);
+    document.getElementById('resultErrTot').textContent =
+      `Errore totale: ${q_lettura.toFixed(1)} ± ${err_tot.toFixed(1)} LPM  [${q_min} ÷ ${q_max}]  (~${err_tot_pct.toFixed(1)}% f.s.)`;
+
+    // Dettagli
+    document.getElementById('dPacqua').textContent  = p_acqua_mbar.toFixed(0) + ' mbar';
+    document.getElementById('dDpFori').textContent  = dp_fori_mbar.toFixed(1) + ' mbar';
+    document.getElementById('dCtotale').textContent = cp_totale_mbar.toFixed(0) + ' mbar';
+    document.getElementById('dPtubo').textContent   = p_tubo_abs_bar.toFixed(3) + ' bara';
+    document.getElementById('dF').textContent       = f.toFixed(3);
+    document.getElementById('dQreale').textContent  = q_reale.toFixed(0) + ' L/min';
+
+    // Margine valvola
+    const mEl = document.getElementById('dMargine');
+    mEl.textContent = margine_bar.toFixed(3) + ' bar';
+    if (margine_bar < 0) {
+      mEl.className = 'di-value warn';
+    } else if (margine_bar < 0.15) {
+      mEl.className = 'di-value warn';
+    } else {
+      mEl.className = 'di-value accent';
+    }
+
+    // Alert margine valvola
+    alertW.classList.remove('visible');
+    alertI.classList.remove('visible');
+    alertW.innerHTML = '';
+    alertI.innerHTML = '';
+
+    if (margine_bar < 0) {
+      alertW.innerHTML = `⚠ <strong>Pressione insufficiente:</strong> la rete a ${p_rete} barg non riesce a vincere la contropressione (${cp_totale_mbar.toFixed(0)} mbar). Aumentare la pressione di rete.`;
+      alertW.classList.add('visible');
+    } else if (margine_bar < 0.15) {
+      alertW.innerHTML = `⚠ <strong>Margine valvola stretto (${(margine_bar*1000).toFixed(0)} mbar):</strong> possibile instabilità di regolazione in caso di cali di rete. Consigliato ≥ 150 mbar.`;
+      alertW.classList.add('visible');
+    }
+
+    // Alert scala
+    if (q_lettura < SCALA_MIN) {
+      document.getElementById('dFs').textContent = '< min scala';
+      document.getElementById('dFs').className   = 'di-value warn';
+      const msg = `⚠ <strong>Sotto scala:</strong> ${q_lettura.toFixed(1)} LPM sotto il minimo (${SCALA_MIN} LPM). Valutare range 24–240 LPM.`;
+      if (!alertW.innerHTML) { alertW.innerHTML = msg; alertW.classList.add('visible'); }
+      else alertI.innerHTML = msg, alertI.classList.add('visible');
+    } else if (q_lettura > SCALA_MAX) {
+      document.getElementById('dFs').textContent = '> max scala';
+      document.getElementById('dFs').className   = 'di-value warn';
+      const msg = `⚠ <strong>Fuori scala:</strong> ${q_lettura.toFixed(1)} LPM supera il massimo (${SCALA_MAX} LPM).`;
+      if (!alertW.innerHTML) { alertW.innerHTML = msg; alertW.classList.add('visible'); }
+      else alertI.innerHTML = msg, alertI.classList.add('visible');
+    } else {
+      const pct_str = pct_fs.toFixed(0) + '% f.s.';
+      document.getElementById('dFs').textContent = pct_str;
+      if (pct_fs < 30) {
+        document.getElementById('dFs').className = 'di-value warn';
+        alertI.innerHTML = `⚠ <strong>Zona bassa (${pct_str}):</strong> sotto il 30% f.s. — accuratezza ridotta. Valutare range 24–240 LPM.`;
+        alertI.classList.add('visible');
+      } else {
+        document.getElementById('dFs').className = 'di-value accent';
+        alertI.innerHTML = `✓ <strong>Zona ottimale (${pct_str}):</strong> lettura affidabile (30–80% f.s.).`;
+        alertI.classList.add('visible');
+      }
+    }
+  }
+
+  document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calcola));
+
+  // Pre-carica valori PBR 4m al caricamento
+  window.addEventListener('load', () => {
+    document.getElementById('altezza').value = '4';
+    document.getElementById('portata').value = '200';
+    document.getElementById('p_rete').value  = '0.8';
+    document.getElementById('n_fori').value  = '2';
+    calcola();
+  });
+</script>
+</body>
+</html>
